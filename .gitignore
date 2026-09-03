@@ -1,0 +1,8 @@
+# Build output
+bin/
+obj/
+
+# Local-only secrets and overrides — never commit real secrets
+appsettings.Development.json
+appsettings.*.local.json
+*.user

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>SDS Request Dashboard — J. J. Keller Safety Management Suite</title>
+    <style>
+        :root {
+            --jjk-navy: #2c3e50;
+            --jjk-green: #58a618;
+            --jjk-border: #d9dee3;
+            --jjk-muted: #6b7783;
+            --jjk-bg: #f4f6f8;
+        }
+
+        * { box-sizing: border-box; }
+        [hidden] { display: none !important; }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #2b3742;
+            background: var(--jjk-bg);
+        }
+
+        header {
+            background: var(--jjk-navy);
+            color: #fff;
+            padding: 18px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        header h1 { font-size: 18px; margin: 0; font-weight: 600; }
+        header .subtitle { font-size: 13px; color: #b9c4cf; margin-top: 2px; }
+        header a { color: #cfe0ee; font-size: 13px; text-decoration: none; }
+        header a:hover { text-decoration: underline; }
+
+        main { padding: 24px; max-width: 1400px; margin: 0 auto; }
+
+        .filters {
+            display: flex;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            gap: 12px 16px;
+            background: #fff;
+            border: 1px solid var(--jjk-border);
+            border-radius: 6px;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+        }
+
+        .filters label {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--jjk-muted);
+        }
+
+        .filters select, .filters input[type="date"] {
+            font-size: 14px;
+            padding: 7px 8px;
+            border: 1px solid var(--jjk-border);
+            border-radius: 4px;
+            background: #fff;
+            color: #2b3742;
+            min-height: 36px;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .meta { font-size: 13px; color: var(--jjk-muted); }
+        .meta strong { color: #2b3742; }
+
+        button {
+            background: var(--jjk-green);
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 9px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            min-height: 36px;
+        }
+        button:hover { background: #4c9214; }
+        button:disabled { background: #a9b4bd; cursor: not-allowed; }
+        button.secondary { background: #55636f; }
+        button.secondary:hover { background: #45515b; }
+
+        .card {
+            background: #fff;
+            border: 1px solid var(--jjk-border);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .table-scroll { overflow-x: auto; }
+
+        table { border-collapse: collapse; width: 100%; font-size: 13px; }
+        thead th {
+            background: #eef1f4;
+            text-align: left;
+            padding: 10px 12px;
+            border-bottom: 2px solid var(--jjk-border);
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+        }
+        tbody td { padding: 9px 12px; border-bottom: 1px solid #eef1f4; vertical-align: top; }
+        tbody tr:nth-child(even) { background: #fafbfc; }
+        tbody tr:hover { background: #f0f6ff; }
+
+        .state { padding: 40px 24px; text-align: center; color: var(--jjk-muted); font-size: 14px; }
+        .state.error { color: #b3261e; }
+        .empty { padding: 40px 24px; text-align: center; color: var(--jjk-muted); }
+    </style>
+</head>
+<body>
+    <header>
+        <div>
+            <h1>SDS Request Dashboard</h1>
+            <div class="subtitle">J. J. Keller Safety Management Suite &mdash; Internal</div>
+        </div>
+        <a id="signout" href="#">Sign out</a>
+    </header>
+
+    <main>
+        <div class="filters">
+            <label>Date field
+                <select id="field">
+                    <option value="FulfilledOn" selected>Fulfilled on</option>
+                    <option value="RequestedOn">Requested on</option>
+                </select>
+            </label>
+            <label>Period
+                <select id="op">
+                    <option value="Equals">Equals</option>
+                    <option value="NotEqual">Does not equal</option>
+                    <option value="After">After</option>
+                    <option value="Before">Before</option>
+                    <option value="Between">Between</option>
+                    <option value="Blank">Blank</option>
+                    <option value="NotBlank">Not blank</option>
+                    <option value="Today">Today</option>
+                    <option value="Yesterday" selected>Yesterday</option>
+                    <option value="Last7Days">Last 7 Days</option>
+                    <option value="Last30Days">Last 30 Days</option>
+                    <option value="ThisMonth">This Month</option>
+                    <option value="LastMonth">Last Month</option>
+                    <option value="ThisYear">This Year</option>
+                    <option value="LastYear">Last Year</option>
+                    <option value="YearToDate">Year To Date</option>
+                </select>
+            </label>
+            <label id="fromWrap" hidden><span id="fromLabel">Date</span>
+                <input type="date" id="from" />
+            </label>
+            <label id="toWrap" hidden>To
+                <input type="date" id="to" />
+            </label>
+            <button id="apply">Apply</button>
+        </div>
+
+        <div class="toolbar">
+            <div class="meta" id="meta">Loading&hellip;</div>
+            <button id="export" class="secondary" disabled>Export CSV</button>
+        </div>
+
+        <div class="card">
+            <div id="content">
+                <div class="state" id="loading">Loading SDS requests&hellip;</div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        (function () {
+            "use strict";
+
+            // Endpoints resolve relative to the app's path base (it is hosted under a subpath).
+            var base = window.location.pathname.replace(/\/+$/, "");
+            var apiUrl = base + "/api/sds-requests";
+            document.getElementById("signout").href = base + "/signout";
+
+            // Number of date inputs each operator needs — must match the server's RequiredDateCount.
+            var REQUIRED = {
+                Equals: 1, NotEqual: 1, After: 1, Before: 1, Between: 2,
+                Blank: 0, NotBlank: 0, Today: 0, Yesterday: 0, Last7Days: 0, Last30Days: 0,
+                ThisMonth: 0, LastMonth: 0, ThisYear: 0, LastYear: 0, YearToDate: 0
+            };
+
+            var FIELD_LABELS = { FulfilledOn: "Fulfilled on", RequestedOn: "Requested on" };
+            var OP_LABELS = {
+                Equals: "equals", NotEqual: "does not equal", After: "after", Before: "before",
+                Between: "between", Blank: "is blank", NotBlank: "is not blank", Today: "today",
+                Yesterday: "yesterday", Last7Days: "in the last 7 days", Last30Days: "in the last 30 days",
+                ThisMonth: "this month", LastMonth: "last month", ThisYear: "this year",
+                LastYear: "last year", YearToDate: "year to date"
+            };
+
+            var fieldSel = document.getElementById("field");
+            var opSel = document.getElementById("op");
+            var fromWrap = document.getElementById("fromWrap");
+            var fromLabel = document.getElementById("fromLabel");
+            var fromInput = document.getElementById("from");
+            var toWrap = document.getElementById("toWrap");
+            var toInput = document.getElementById("to");
+            var exportBtn = document.getElementById("export");
+
+            var state = { columns: [], rows: [] };
+
+            function text(el, value) { el.textContent = value; return el; }
+
+            // Show the date inputs that the chosen operator needs (conditional filter UI).
+            function syncInputs() {
+                var op = opSel.value;
+                var req = REQUIRED[op];
+                if (op === "Between") {
+                    fromLabel.textContent = "From";
+                    fromWrap.hidden = false;
+                    toWrap.hidden = false;
+                } else if (req === 1) {
+                    fromLabel.textContent = "Date";
+                    fromWrap.hidden = false;
+                    toWrap.hidden = true;
+                } else {
+                    fromWrap.hidden = true;
+                    toWrap.hidden = true;
+                }
+            }
+
+            function describe(field, op) {
+                var parts = [FIELD_LABELS[field], OP_LABELS[op]];
+                if (op === "Between") { parts.push(fromInput.value + " – " + toInput.value); }
+                else if (REQUIRED[op] === 1) { parts.push(fromInput.value); }
+                return parts.join(" ");
+            }
+
+            function setState(node) {
+                var content = document.getElementById("content");
+                content.innerHTML = "";
+                content.appendChild(node);
+            }
+
+            function showLoading() {
+                var el = document.createElement("div");
+                el.className = "state";
+                setState(text(el, "Loading SDS requests…"));
+                document.getElementById("meta").textContent = "Loading…";
+                exportBtn.disabled = true;
+            }
+
+            function showError(message) {
+                var el = document.createElement("div");
+                el.className = "state error";
+                setState(text(el, message));
+                document.getElementById("meta").textContent = "";
+                exportBtn.disabled = true;
+            }
+
+            function render(data, label) {
+                state = data;
+                var count = data.rows.length;
+
+                var metaEl = document.getElementById("meta");
+                metaEl.innerHTML = "";
+                metaEl.appendChild(text(document.createElement("strong"), count.toLocaleString()));
+                metaEl.appendChild(document.createTextNode(
+                    " request" + (count === 1 ? "" : "s") + " · " + label +
+                    " · generated " + new Date(data.generatedAt).toLocaleString()));
+
+                exportBtn.disabled = count === 0;
+
+                if (count === 0) {
+                    var empty = document.createElement("div");
+                    empty.className = "empty";
+                    setState(text(empty, "No SDS requests match this filter."));
+                    return;
+                }
+
+                var scroll = document.createElement("div");
+                scroll.className = "table-scroll";
+                var table = document.createElement("table");
+
+                var thead = document.createElement("thead");
+                var headRow = document.createElement("tr");
+                data.columns.forEach(function (col) {
+                    headRow.appendChild(text(document.createElement("th"), col));
+                });
+                thead.appendChild(headRow);
+                table.appendChild(thead);
+
+                var tbody = document.createElement("tbody");
+                data.rows.forEach(function (row) {
+                    var tr = document.createElement("tr");
+                    row.forEach(function (cell) {
+                        // textContent only — never innerHTML — so DB values cannot inject markup.
+                        tr.appendChild(text(document.createElement("td"), cell == null ? "" : cell));
+                    });
+                    tbody.appendChild(tr);
+                });
+                table.appendChild(tbody);
+
+                scroll.appendChild(table);
+                setState(scroll);
+            }
+
+            // Neutralize CSV/formula injection and quote-escape per RFC 4180.
+            function csvCell(value) {
+                var v = value == null ? "" : String(value);
+                if (/^[=+\-@\t\r]/.test(v)) { v = "'" + v; }
+                if (/[",\n\r]/.test(v)) { v = '"' + v.replace(/"/g, '""') + '"'; }
+                return v;
+            }
+
+            function exportCsv() {
+                var lines = [state.columns.map(csvCell).join(",")];
+                state.rows.forEach(function (row) { lines.push(row.map(csvCell).join(",")); });
+                var blob = new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8;" });
+                var a = document.createElement("a");
+                a.href = URL.createObjectURL(blob);
+                a.download = "sds-requests.csv";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(a.href);
+            }
+
+            function load() {
+                var field = fieldSel.value;
+                var op = opSel.value;
+                var req = REQUIRED[op];
+
+                var params = new URLSearchParams();
+                params.set("field", field);
+                params.set("op", op);
+
+                if (op === "Between") {
+                    if (!fromInput.value || !toInput.value) { showError("Select both a start and end date."); return; }
+                    if (fromInput.value > toInput.value) { showError("The start date must be on or before the end date."); return; }
+                    params.set("from", fromInput.value);
+                    params.set("to", toInput.value);
+                } else if (req === 1) {
+                    if (!fromInput.value) { showError("Select a date."); return; }
+                    params.set("from", fromInput.value);
+                }
+
+                var label = describe(field, op);
+                showLoading();
+
+                fetch(apiUrl + "?" + params.toString(),
+                    { headers: { "Accept": "application/json" }, credentials: "same-origin" })
+                    .then(function (res) {
+                        if (res.status === 401 || res.status === 403) { window.location.reload(); return null; }
+                        if (res.status === 400) {
+                            return res.json().then(function (e) { throw new Error(e.error || "Invalid filter."); });
+                        }
+                        if (!res.ok) { throw new Error("Request failed (" + res.status + ")"); }
+                        return res.json();
+                    })
+                    .then(function (data) { if (data) { render(data, label); } })
+                    .catch(function (e) { showError("Could not load SDS requests: " + e.message); });
+            }
+
+            opSel.addEventListener("change", syncInputs);
+            document.getElementById("apply").addEventListener("click", load);
+            exportBtn.addEventListener("click", exportCsv);
+
+            // Initial state: Fulfilled on = Yesterday (the original report), loaded immediately.
+            syncInputs();
+            load();
+        })();
+    </script>
+</body>
+</html>
